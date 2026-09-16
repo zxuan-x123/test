@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>风机运行状态监控 - 仪表盘组件</title>
+    <!-- 引入ECharts CDN，无需本地安装，开箱即用 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <!-- 简单的样式适配，匹配截图里的布局 -->
+    <style>
+        .dashboard-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 300px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .gauge-chart {
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 容器：放3个风机的仪表盘 -->
+    <div class="dashboard-container">
+        <div id="fan1" class="gauge-chart"></div>
+        <div id="fan2" class="gauge-chart"></div>
+        <div id="fan3" class="gauge-chart"></div>
+    </div>
+
+    <script>
+        // 初始化单个仪表盘的函数（复用逻辑）
+        function initGaugeChart(domId, fanName, value) {
+            // 获取DOM元素
+            const chartDom = document.getElementById(domId);
+            const myChart = echarts.init(chartDom);
+            
+            // 定义颜色区间（匹配监控场景：优/良/差）
+            const color = value >= 90 ? '#008000' : (value >= 80 ? '#1E90FF' : '#FFD700');
+            
+            // 仪表盘配置项
+            const option = {
+                title: {
+                    text: fanName,
+                    left: 'center',
+                    top: '85%',
+                    textStyle: { fontSize: 14, color: '#333' }
+                },
+                tooltip: {
+                    formatter: '{a} <br/>{b} : {c}分'
+                },
+                series: [
+                    {
+                        name: '运行状态',
+                        type: 'gauge',
+                        radius: '80%',
+                        startAngle: 90,
+                        endAngle: -270,
+                        pointer: {
+                            show: true,
+                            length: '70%',
+                            width: 4
+                        },
+                        progress: {
+                            show: true,
+                            overlap: false,
+                            roundCap: true,
+                            clip: false,
+                            itemStyle: { color: color }
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                width: 20,
+                                color: [
+                                    [0.3, '#FF6347'], // 差（0-30分）
+                                    [0.7, '#FFD700'], // 中（30-70分）
+                                    [1, '#008000']    // 优（70-100分）
+                                ]
+                            }
+                        },
+                        splitLine: {
+                            show: false
+                        },
+                        axisTick: {
+                            show: false
+                        },
+                        axisLabel: {
+                            show: false
+                        },
+                        title: {
+                            show: false
+                        },
+                        detail: {
+                            valueAnimation: true,
+                            fontSize: 20,
+                            offsetCenter: [0, '-10%'],
+                            formatter: '{value}',
+                            color: color
+                        },
+                        data: [{ value: value, name: '状态评分' }]
+                    }
+                ]
+            };
+
+            // 渲染图表
+            myChart.setOption(option);
+            // 适配窗口大小变化
+            window.addEventListener('resize', () => myChart.resize());
+        }
+
+        // 初始化3个风机的仪表盘（对应截图里的85、92、78分）
+        initGaugeChart('fan1', '1号风机', 85);
+        initGaugeChart('fan2', '2号风机', 92);
+        initGaugeChart('fan3', '3号风机', 78);
+    </script>
+</body>
+</html>
